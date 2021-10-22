@@ -11,3 +11,7 @@ Project 3: Automatic Fire Alarm and Extinguisher-
 
 Project 4: Automatic Temprature Controlled Fan
 [https://www.tinkercad.com/things/5ToCqdQdDic-automatic-temperature-controlled-fan/editel?sharecode=Sk05gnNX8OS3duyf-zjdGnvWBI8wCinnvvvmqw0X03E](url)
+
+Project 5: Text Based Appliance Control
+
+https://www.tinkercad.com/things/5fyUznu8agj-copy-of-saviourq9/editel?sharecode=UE5rdv2sSltc_ngStVVSVoIwMMg56Ey2Q9cH-AMPGq8
