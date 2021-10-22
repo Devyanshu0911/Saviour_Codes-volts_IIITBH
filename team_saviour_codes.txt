@@ -1,0 +1,852 @@
+
+##PROJECT 1 - AUTOMATIC AMBIENT LIGHTING
+
+
+#include <Adafruit_NeoPixel.h>
+
+#define PIN 3
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(12, PIN, NEO_GRB + NEO_KHZ800);
+
+int potPinR = 0;
+int potPinG = 1;
+int potPinB = 2;
+int potPinV = 3;
+int potPinBright = 5;
+int colorValG = 0;
+int colorValR = 0;
+int colorValB = 0;
+int bright = 10;
+int readingG = 0;
+int readingR = 0;
+int readingB = 0;
+int readingV = 0;
+int val = 0;
+int x;
+int readingBright = 0;
+#define pirpin 7
+
+int valp=0,flag=0;
+
+void setup() {
+  strip.begin();
+ pinMode(pirpin,INPUT);
+ 
+  Serial.begin(9600);
+}
+
+void loop() {
+  valp=digitalRead(pirpin);
+  if(valp==1 && flag==0)
+  {
+  	flag=1;
+  	readingG = analogRead(potPinG);
+  	colorValG = (readingG/1023.0) * 255.;
+
+  	readingR = analogRead(potPinR);
+  	colorValR = (readingR/1023.0) * 255.;
+
+  	readingB = analogRead(potPinB);
+  	colorValB = (readingB/1023.0) * 255.;
+
+  	readingV = analogRead(potPinV);
+  	val = (readingV/1023.0) * 13.;
+
+  	readingBright = analogRead(potPinBright);
+  	bright = (readingBright/1023.0) * 255.;
+    delay(1000);
+  }
+  else if(valp==1 && flag==1)
+  {
+  	flag=0;
+  	colorValG = 0;
+  	colorValR = 0;
+  	colorValB = 0;
+	bright = 0;
+  	val = 0;
+  }
+  if(flag==1)
+  {
+    colorchecker();
+  }
+  for ( x = 0; x < val; x++) 
+  {
+    strip.setPixelColor(x,colorValG,colorValR,colorValB);
+  }
+  for ( x = val; x < 13; x++) 
+  {
+    strip.setPixelColor(x,0,0,0);
+  }
+  strip.setBrightness(bright);
+  strip.show();
+  Serial.println(valp);
+  delay(1000);
+}
+void colorchecker()
+{
+  	readingG = analogRead(potPinG);
+  	colorValG = (readingG/1023.0) * 255.;
+
+  	readingR = analogRead(potPinR);
+  	colorValR = (readingR/1023.0) * 255.;
+
+  	readingB = analogRead(potPinB);
+  	colorValB = (readingB/1023.0) * 255.;
+
+  	readingV = analogRead(potPinV);
+  	val = (readingV/1023.0) * 13.;
+
+  	readingBright = analogRead(potPinBright);
+  	bright = (readingBright/1023.0) * 255.;
+    delay(1000);
+}
+
+-------------------------------------------------------------------------------------------
+
+##PROJECT 2 - AUTOMATIC TEMPERATURE CONTROLLED FAN
+
+
+#include <LiquidCrystal.h>
+
+const int p = 8;
+int redButton=A2;
+int blueButton=A3;
+int greenButton=A4;
+int tempButton=A1;
+int sp=6,d1=7,d2=9,ms=0;
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+void setup() {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  pinMode(p, OUTPUT);
+  pinMode(tempButton,INPUT);
+  pinMode(redButton, OUTPUT);
+  pinMode(blueButton, OUTPUT);
+  pinMode(greenButton, OUTPUT);
+  Serial.begin(9600);
+  pinMode(sp, OUTPUT);
+  pinMode(d1, OUTPUT);
+  pinMode(d2, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(p,LOW);
+  int Temp = analogRead(tempButton);
+  float volts = (Temp / 965.0) * 4.75;
+  float c = (volts - .5) * 100;
+  Serial.println(c);
+  if(c<=0)
+  {
+    digitalWrite(redButton,LOW);
+    digitalWrite(blueButton,HIGH);
+    digitalWrite(greenButton,LOW);
+    ms=0;
+  }
+  else if(c<=20 && c>0)
+  {
+    digitalWrite(redButton,LOW);
+    digitalWrite(blueButton,HIGH);
+    digitalWrite(greenButton,LOW);
+    ms=63;
+  }
+  else if(c>20 && c<=30)
+  {
+    digitalWrite(redButton,LOW);
+    digitalWrite(blueButton,LOW);
+    digitalWrite(greenButton,HIGH);
+    ms=127;
+  }
+  else if(c>30 && c<=45)
+  {
+    digitalWrite(redButton,LOW);
+    digitalWrite(blueButton,LOW);
+    digitalWrite(greenButton,HIGH);
+    ms=191;
+  }
+  else
+  {
+    digitalWrite(redButton,HIGH);
+    digitalWrite(blueButton,LOW);
+    digitalWrite(greenButton,LOW);
+    ms=255;
+  }
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("TEMP: ");
+  lcd.print(c);
+  lcd.setCursor(0,1);
+  lcd.print("Fan Speed: ");
+  lcd.print((ms+1)/64);
+  digitalWrite(d1,HIGH);
+  digitalWrite(d2,LOW);
+  analogWrite(sp,ms);
+  delay(1000);
+}
+
+-----------------------------------------------------------------------------------------
+
+##PROJECT 3 - FIRE ALARM AND EXTINGUISHER
+
+#include<LiquidCrystal.h>
+
+#define NOTE_C4  262
+#define NOTE_G3  196
+#define NOTE_A3  220
+#define NOTE_B3  247
+#define NOTE_C4  262
+LiquidCrystal lcd(12, 9, 5, 4, 3, 2);
+int flag=0;
+String str="";
+
+#define motor 10
+int temppin=A0;
+float temp;
+int val;
+float note;
+int pins=11;
+// notes in the melody:
+int melody[] = {
+  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+};
+
+int noteDurations[] = {
+  4, 8, 8, 4, 4, 4, 4, 4
+};
+
+void setup()
+{
+  lcd.begin(16,2);
+  pinMode(temppin, INPUT);
+  Serial.begin(9600);
+  pinMode(pins, OUTPUT);
+  pinMode(motor, OUTPUT);
+  lcd.setCursor(2,0);
+  lcd.print("Fire Control");
+  lcd.setCursor(3,1);
+  lcd.print("Activated");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop()
+{
+  lcd.setCursor(0,0);
+  lcd.print(" Automatic Mode ");
+  lcd.setCursor(0,1);
+  lcd.print("                ");
+  val=analogRead(temppin);
+  temp= (9.763313609467 * val / 20.)- 49.763313609467;
+  Serial.println(temp);
+  if(temp>80)
+  {
+    if(flag==0)
+    {
+    flag=1;
+    lcd.begin(16,2);
+    lcd.setCursor(0,0);
+    lcd.print("   ALERT MODE   ");
+    lcd.setCursor(1,1);
+    lcd.print("   Motor ON    ");
+    digitalWrite(motor, HIGH);
+    }
+  	for (int Note = 0; Note < 8; Note++) {
+	   //to calculate the note duration, take one second divided by the note type.
+	   int noteDuration = 1000 / noteDurations[Note];
+	   tone(pins, melody[Note], noteDuration);
+       // to distinguish the notes, set a minimum time between them.
+       int pauseBetweenNotes = noteDuration * 1.30;
+       delay(pauseBetweenNotes);
+       // stop the tone playing
+       noTone(8);
+  	}
+  }
+  if(temp<80 && flag==1)
+  {
+    digitalWrite(motor, LOW);
+    lcd.setCursor(0,0);
+    lcd.print("   SAFE MODE   ");
+    lcd.setCursor(0,1);
+    lcd.print("   MOTOR OFF   ");
+    delay(2000);
+    flag=0;
+  }
+}
+
+------------------------------------------------------------------------------------------
+
+##PROJECT 4 - ANTI THEFT DOOR AND SAFE LOCK
+
+#include <LiquidCrystal.h>
+#include <Servo.h>
+#include <Keypad.h>
+
+#define NOTE_C4  262
+#define NOTE_G3  196
+#define NOTE_A3  220
+#define NOTE_B3  247
+#define NOTE_C4  262
+
+int Protect=1;
+int pins=A4;
+// notes in the melody:
+int melody[] = {
+  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+};
+int noteDurations[] = {
+  4, 8, 8, 4, 4, 4, 4, 4
+};
+
+LiquidCrystal lcd(A1,A2,10,11,12,13);
+int servopin=A0;
+const byte rows = 4; 
+const byte cols =4; 
+char pass[4]={'0','0','0','0'};
+int servopos=0,lock=0,dt=500;
+char pet[6]={'*','*','*','*','*','*'};
+Servo s1;
+int time=5000;
+
+char hexkeypad[rows][cols] = { {'1','2','3','A'},
+							   {'4','5','6','B'},
+							   {'7','8','9','C'},
+							   {'*','0','#','D'}
+                             };
+
+byte rowspins[rows] = {9,8,7,6};  // for rows 
+byte colspins[cols] = {5,4,3,2};  // for cols
+
+// Initializing the instance of Keypad class
+Keypad k = Keypad(makeKeymap(hexkeypad),rowspins,colspins,rows,cols);
+
+byte i = 0;
+
+void setup()
+{
+  pinMode(pins, OUTPUT);
+  s1.attach(servopin);
+  s1.write(0);
+  pinMode(servopin,OUTPUT);
+  Serial.begin(9600);
+  for(i=2;i<=9;i++){
+    pinMode(i,OUTPUT);
+  }
+  lcd.begin(16,2);
+  lcd.setCursor(0,0);
+  lcd.print("How to start");
+  lcd.setCursor(0,1);
+  lcd.print("See Srl Monitor");
+  delay(2000);
+  Serial.println("Welcome to Arduio keypad door lock");
+  Serial.println("Code 'AAAA' helps to change password");
+  Serial.println("Code 'BBBB' helps to recover password");
+  Serial.println("Code 'DDDD' helps to change time of door opening (5 sec by default)");
+  set_pass();
+}
+
+void loop()
+{
+  servopos=0;
+  s1.write(servopos);
+  char keypressed[4];
+  lcd.clear();
+  lcd.setCursor(0,0);
+  for(int i=0;i<4;i++)
+  {
+    keypressed[i]=k.waitForKey();
+    Serial.print(keypressed[i]);
+    lcd.print("*");
+  }
+  Serial.println();
+  if(pass[0]==keypressed[0] && pass[1]==keypressed[1] && pass[2]==keypressed[2] && pass[3]==keypressed[3])
+  {
+    lock=0;
+    Serial.println("unlocked");
+    lcd.setCursor(0,1);
+    lcd.print("unlocked");
+    delay(1000);
+    servopos=90;
+    for (int j=0;j<=servopos;j=j+10)
+    {
+      s1.write(j);
+      delay(100);
+    }
+    delay(time);
+  }
+  else if(keypressed[0]=='A' && keypressed[1]=='A' && keypressed[2]=='A' && keypressed[3]=='A')
+  {
+    new_pass(pass);    
+  }
+  else if(keypressed[0]=='B' && keypressed[1]=='B' && keypressed[2]=='B' && keypressed[3]=='B')
+  {
+    rec_pass();
+  }
+  else if(keypressed[0]=='D' && keypressed[1]=='D' && keypressed[2]=='D' && keypressed[3]=='D')
+  {
+    time=change_time();
+  }
+  else
+  {
+    Serial.println("locked");
+    lcd.setCursor(0,1);
+    lcd.print("Wrong Password");
+    servopos=0;
+    delay(1000);
+    lock++;
+    if (lock==3)
+    {
+      Serial.println("You entered 3 times incorrectly, wait for 30 sec to reattempt");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("3 wrong attempts");
+      lcd.setCursor(0,1);
+      lcd.print("Wait 30 seconds");
+      delay(30*dt);
+    }
+    else if(lock>3)
+    {
+      Serial.println("You entered more than 3 times incorrectly, Alarm Goes off (recover now)");
+      play();
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("3+ wrong attempt");
+      lcd.setCursor(0,1);
+      lcd.print("Recover Password");
+      rec_pass();
+    }
+  }
+}
+
+void set_pass()
+{
+  Serial.println("Kindly Enter 4 digit password for arduino door lock on keypad");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter your pass");
+  lcd.setCursor(0,1);
+  for (int i=0;i<4;i++)
+  {
+    pass[i]=k.waitForKey();
+    Serial.print(pass[i]);
+    lcd.print("*");
+  }
+  Serial.println();
+  lcd.clear();
+  Serial.println("Kindly Enter 6 digit recovery pet code for arduino door lock on keypad");
+  lcd.setCursor(0,0);
+  lcd.print("Enter pet code");
+  lcd.setCursor(0,1);
+  for (int i=0;i<6;i++)
+  {
+    pet[i]=k.waitForKey();
+    Serial.print(pet[i]);
+    lcd.print("*");
+  }
+  Serial.println();
+  Serial.println("Now use keypad door lock and enjoy");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enjoy door lock");
+}
+
+
+void new_pass(char pass[4])
+{
+  lock=0;
+  int chck=0;
+  Serial.println("You opted to set up new password");
+  Serial.println("Enter old password on keypad");
+  lcd.setCursor(0,0);
+  lcd.print("Change_Pass");
+  delay(2000);
+  char check[4];
+  while (chck==0)
+  {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Enter old pass");
+    lcd.setCursor(0,1);
+    chck=1;
+  	for (int i=0;i<4;i++)
+  	{
+      check[i]=k.waitForKey();
+      Serial.print(check[i]);
+      lcd.print("*");
+  	}
+  	Serial.println();
+  	for (int i=0;i<4;i++)
+  	{
+      int temp;
+      if(pass[i]!=check[i])
+        temp=0;
+      else 
+        temp=1;
+      chck=chck*temp;
+  	}
+    if (chck==0){
+      Serial.println("Error occured (wrong password or try again)");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Error occured");
+      lcd.setCursor(0,1);
+      lcd.print("Try again");
+      delay(2000);
+    }
+    lock++;
+    if (lock==3)
+    {
+      Serial.println("wait 30 sec, Last chance before Recovey Mode");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print(" Last attempt ");
+      lcd.setCursor(0,1);
+      lcd.print("Wait 30 seconds");
+      delay(30*dt);
+    }
+    else if(lock>3)
+    {
+      Serial.println("more than 3 times incorrect, Recover password");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("3+ wrong attempt");
+      lcd.setCursor(0,1);
+      lcd.print("Recover Password");
+      play();
+      rec_pass();
+    }
+  }
+  
+  Serial.println("Enter new password on keypad");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter new pass");
+  lcd.setCursor(0,1);
+  for (int i=0;i<4;i++)
+  {
+   pass[i]=k.waitForKey();
+    Serial.print(pass[i]);
+    lcd.print("*");
+  }
+  Serial.println();
+  Serial.println("Setting up new password successful");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("success new pass");
+  lcd.setCursor(0,1);
+  lcd.print("****");
+  delay(2000);
+}
+
+
+void rec_pass()
+{
+  lock=0;
+  int chck=0;
+  Serial.println("Recover password");
+  Serial.println("Enter your pet code from keypad");
+  lcd.setCursor(0,0);
+  lcd.print("Recover_Pass");
+  delay(2000);
+  while (chck==0)
+  {
+    chck=1;
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Enter petname");
+    lcd.setCursor(0,1);
+    char check[8];
+    for (int i=0;i<6;i++)
+    {
+      check[i]=k.waitForKey();
+      Serial.print(check[i]);
+      lcd.print("*");
+    }
+    Serial.println();
+    for (int i=0;i<6;i++)
+    {
+      int temp;
+      if(pet[i]!=check[i])
+        temp=0;
+      else 
+        temp=1;
+      chck=chck*temp;
+    }
+    if (chck==0){
+      Serial.println("Error occured (wrong password or try again)");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Error occured");
+      lcd.setCursor(0,1);
+      lcd.print("Try again");
+      delay(2000);
+    }
+    lock++;
+    if (lock==3)
+    {
+      Serial.println("wait 30 sec to reattempt");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("3 wrong attempts");
+      lcd.setCursor(0,1);
+      lcd.print("LAST ATTEMPT");
+      delay(30*dt);
+    }
+    else if(lock>3)
+    {
+      Serial.println("You entered more than 3 times incorrectly, Call customer Service");
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("3+ wrong attempt");
+      lcd.setCursor(0,1);
+      lcd.print("Contact Support");
+      digitalWrite(pins,HIGH);
+      while(Protect==1)
+      {
+      }
+    }
+  }
+  noTone(8);
+  Serial.println("Enter new password on keypad");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter new pass");
+  lcd.setCursor(0,1);
+  for (int i=0;i<4;i++)
+  {
+    pass[i]=k.waitForKey();
+    Serial.print(pass[i]);
+    lcd.print("*");
+  }
+  Serial.println();
+  Serial.println("Recovering password successful");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("recovered pass");
+  lcd.setCursor(0,1);
+  lcd.print("****");
+  delay(2000);
+}
+
+
+int change_time()
+{
+  Serial.print("Enter time you want to set for door (in Milliseconds):- ");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter Time ");
+  while(Serial.available()==0){
+  }
+  int t=Serial.parseInt();
+  Serial.println(t);
+  lcd.print(t);
+  lcd.setCursor(0,1);
+  lcd.print("Changes success");
+  Serial.println("Time for door opening changed Successfully");
+  return (t);
+}
+
+void play()
+{
+  for (int Note = 0; Note < 8; Note++) {
+    int noteDuration = 1000 / noteDurations[Note];
+	tone(pins, melody[Note], noteDuration);
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+  }
+}
+
+------------------------------------------------------------------------------------------
+
+##PROJECT 5 - TEXT BASED APPLIANCE CONTROL
+
+#include <LiquidCrystal.h>
+#include <Servo.h>
+
+
+#define NOTE_C4  262
+#define NOTE_G3  196
+#define NOTE_A3  220
+#define NOTE_B3  247
+#define NOTE_C4  262
+
+int num,pin=8,i,temppin=A5,gpin=A2,rpin=A0,bpin=A1,div1,d=6;
+float val;
+String str;
+int servoPin=9;
+int servoPos=90;
+Servo servo;
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+int pins=A4;
+// notes in the melody:
+int melody[] = {
+  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+};
+int noteDurations[] = {
+  4, 8, 8, 4, 4, 4, 4, 4
+};
+
+void setup() 
+{
+  pinMode(pins, OUTPUT);
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  
+  pinMode(pin,OUTPUT);
+  pinMode(d,OUTPUT);
+  pinMode(rpin,OUTPUT);
+  pinMode(gpin,OUTPUT);
+  pinMode(bpin,OUTPUT);
+  pinMode(div1,INPUT);
+  pinMode(temppin,INPUT);
+  servo.attach(servoPin);
+  Serial.println("Enter commands from following options:");
+  Serial.println("Turn on fan");
+  Serial.println("Turn off fan");
+  Serial.println("Tell Temperature");
+  Serial.println("Play Song");
+  Serial.println("Switch on light");
+  Serial.println("Switch off Light");
+  Serial.println("Open Door");
+  Serial.println("Close Door");
+}
+
+void loop() {
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Enter command");
+  Serial.println("Enter command");
+  while(Serial.available()==0)
+  {}
+  str = Serial.readStringUntil('\n');
+  Serial.println(str);
+ // lcd.print(num);
+  
+  if(str=="Turn on fan")
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Enter Value 1-4");
+    while(Serial.available()==0){
+    }
+    num=Serial.parseInt();
+  Serial.println(num);
+   if(num==1)
+      div1=60;
+   else 
+   if(num==2)
+    {
+      div1=120;
+    }
+   else 
+   if(num==3)
+     div1=180;
+     else
+     div1=240;
+     analogWrite(d,div1);
+     lcd.setCursor(0, 0);
+     lcd.print("Fan running"); 
+  }
+    else
+      
+   if(str=="Turn off fan")
+   {   
+     lcd.clear();
+     analogWrite(d,0);
+     lcd.setCursor(0, 0);
+     lcd.print("Fan closed"); 
+   } 
+    else 
+      
+    if(str=="Tell Temperature")
+    {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Temperature is");
+      val=analogRead(temppin);
+      float temp= (9.763313609467 * val / 20.)- 49.763313609467;
+      lcd.setCursor(0, 1);
+      lcd.print(temp);
+      delay(1000);
+    }
+    else
+      if(str=="Play Song")
+    {
+     lcd.clear();
+     lcd.setCursor(0, 0);
+     lcd.print("Playing Song");
+    for (int Note = 0; Note < 8; Note++) 
+    {
+      int noteDuration = 1000 / noteDurations[Note];
+	  tone(pins, melody[Note], noteDuration);
+      int pauseBetweenNotes = noteDuration * 1.30;
+      delay(pauseBetweenNotes);
+      noTone(8);
+  	}
+    }
+    else
+    if(str=="Switch on light")
+    {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Enter RGB values");
+      Serial.println("Enter RGB values");
+      Serial.println("Enter Red value");
+      while(Serial.available()==0){
+      }
+      int num1=Serial.parseInt();
+  Serial.println(num1);
+      Serial.println("Enter Blue value");      
+      while(Serial.available()==0){
+      }
+      int num2=Serial.parseInt();
+  Serial.println(num2);
+      Serial.println("Enter Green value");
+      while(Serial.available()==0){
+      }
+      int num3=Serial.parseInt();
+  Serial.println(num3);
+      analogWrite(rpin,num1);
+      analogWrite(gpin,num2);
+      analogWrite(bpin,num3);
+      lcd.clear();
+     lcd.setCursor(0, 0);
+      lcd.print("Light on");
+    }
+    else
+    if(str=="Switch off Light")
+     {
+     lcd.clear();
+     lcd.setCursor(0, 0);
+     analogWrite(rpin,0);
+     analogWrite(gpin,0);
+     analogWrite(bpin,0);
+     }
+     else
+     if(str=="Open Door")
+       {
+       lcd.clear();
+       lcd.setCursor(0, 0);   
+       servo.write(90);
+       lcd.print("Door Opened");  
+       }
+       else
+       
+         if(str=="Close Door")
+         {  servo.write(0);
+            lcd.clear();
+           lcd.setCursor(0, 0);
+           lcd.print("Door closed");
+         }
+  else{
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Incorrect Command");
+  }
+
+  delay(1000);
+  
+  //digitalWrite(pin,HIGH);
+}
+
+------------------------------------------------------------------------------------------
